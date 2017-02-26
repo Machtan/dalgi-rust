@@ -1,0 +1,16 @@
+[package]
+name = "dalgi"
+version = "0.1.0"
+authors = ["Machtan <jako3047@gmail.com>"]
+description = "Game development utility library"
+
+[features]
+rsdl2_support = ["rsdl2"]
+
+[[example]]
+name = "ex_rsdl2_input"
+# Requires '--features rsdl2_support' too
+
+
+[dependencies]
+rsdl2 = { path = "../rsdl2", optional = true }
