@@ -56,7 +56,7 @@ impl DescribeInputChange for EventKind {
 }
 
 impl DescribeInputChange for Event {
-    fn describe_changes<F: FnMut(InputChange)>(&self, mut handler: F) {
+    fn describe_changes<F: FnMut(InputChange)>(&self, handler: F) {
         self.kind.describe_changes(handler);
     }
 }

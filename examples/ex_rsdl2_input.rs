@@ -2,7 +2,7 @@
 extern crate dalgi;
 extern crate rsdl2;
 
-use rsdl2::{Rect, Surface};
+use rsdl2::{Rect};
 use dalgi::input::*;
 use std::time::Duration;
 use std::thread;

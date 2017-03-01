@@ -7,8 +7,6 @@ pub mod input;
 
 #[cfg(feature = "rsdl2_support")]
 mod rsdl2_input;
-#[cfg(feature = "rsdl2_support")]
-use rsdl2_input::*;
 
 #[test]
 fn it_works() {}
