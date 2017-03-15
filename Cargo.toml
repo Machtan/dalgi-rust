@@ -5,11 +5,7 @@ authors = ["Machtan <jako3047@gmail.com>"]
 description = "Game development utility library"
 
 [features]
-rsdl2_support = ["rsdl2"]
-
-[[example]]
-name = "ex_rsdl2_input"
-# Requires '--features rsdl2_support' too
+rsdl2-support = ["rsdl2"]
 
 
 [dependencies]

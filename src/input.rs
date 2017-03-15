@@ -180,6 +180,12 @@ impl KeyDesc {
     }
 }
 
+impl From<Key> for KeyDesc {
+    fn from(value: Key) -> KeyDesc {
+        KeyDesc::new(value)
+    }
+}
+
 /// The description of a physical game input.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum InputDesc {
@@ -188,8 +194,14 @@ pub enum InputDesc {
 // TODO: Handle modifier checks, somehow (in InputMapper?)
 
 impl From<KeyDesc> for InputDesc {
-    fn from(key: KeyDesc) -> InputDesc {
-        InputDesc::Key(key)
+    fn from(keydesc: KeyDesc) -> InputDesc {
+        InputDesc::Key(keydesc)
+    }
+}
+
+impl From<Key> for InputDesc {
+    fn from(key: Key) -> InputDesc {
+        InputDesc::Key(KeyDesc::new(key))
     }
 }
 
@@ -231,8 +243,8 @@ impl<ActionId: Copy> InputMapper<ActionId> {
         InputMapper { mappings: HashMap::new() }
     }
     
-    /// Inserts a mapping from an input description to a game action.
-    pub fn insert<D: Into<InputDesc>>(&mut self, desc: D, action: ActionId) {
+    /// Adds a mapping from an input description to a game action.
+    pub fn add<D: Into<InputDesc>>(&mut self, action: ActionId, desc: D) {
         self.mappings.entry(desc.into()).or_insert_with(Vec::new).push(action);
     }
 

@@ -35,12 +35,12 @@ fn map_key(key: TestKey) -> Key {
     }
 }
 
-impl DescribeEvent for TestEvent {
-    fn describe(&self) -> InputChange {
+impl DescribeInputChange for TestEvent {
+    fn describe_changes<F: FnMut(InputChange)>(&self, mut handler: F) {
         use self::TestEvent::*;
         match *self {
-            KeyDown(key) => InputChange::Key(KeyDesc::new(map_key(key)), ButtonState::Pressed),
-            KeyUp(key) => InputChange::Key(KeyDesc::new(map_key(key)), ButtonState::Released),
+            KeyDown(key) => handler(InputChange::Key(KeyDesc::new(map_key(key)), ButtonChange::Pressed)),
+            KeyUp(key) => handler(InputChange::Key(KeyDesc::new(map_key(key)), ButtonChange::Released)),
         }
     }
 }
@@ -59,11 +59,8 @@ pub fn main() {
     println!("shoot: {:?}", input.shoot);
     let mut mapper = InputMapper::new();
 
-    let shoot = KeyDesc::new(Key::Space);
-    mapper.insert(shoot, ActionId::shoot);
-
-    let jump = KeyDesc::new(Key::Up);
-    mapper.insert(jump, ActionId::jump);
+    mapper.add(ActionId::shoot, Key::Space);
+    mapper.add(ActionId::jump, Key::Up);
 
     let mut input = Input::new(); // reset
     let shoot_event = TestEvent::KeyDown(TestKey::Space);

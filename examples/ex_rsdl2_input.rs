@@ -1,7 +1,11 @@
+//! Requires the 'rsdl2-support' feature!
+
 #[macro_use]
 extern crate dalgi;
+#[cfg(feature = "rsdl2-support")]
 extern crate rsdl2;
 
+#[cfg(feature = "rsdl2-support")]
 use rsdl2::{Rect};
 use dalgi::input::*;
 use std::time::Duration;
@@ -17,6 +21,7 @@ input_state! {
     id_enum: ActionId
 }
 
+#[cfg(feature = "rsdl2-support")]
 fn main() {
     // Setup SDL2
     let context = rsdl2::init().everything().finish().expect("init failed");
@@ -34,16 +39,10 @@ fn main() {
         
     // Setup input
     let mut mapper = InputMapper::new();
-
-    let shoot = KeyDesc::new(Key::Space);
-    let jump = KeyDesc::new(Key::Up);
-    let right = KeyDesc::new(Key::Right);
-    let left = KeyDesc::new(Key::Left);
-    
-    mapper.insert(shoot, ActionId::shoot);
-    mapper.insert(jump, ActionId::jump);
-    mapper.insert(right, ActionId::right);
-    mapper.insert(left, ActionId::left);
+    mapper.add(ActionId::shoot, Key::Space);
+    mapper.add(ActionId::jump, Key::Up);
+    mapper.add(ActionId::right, Key::Right);
+    mapper.add(ActionId::left, Key::Left);
 
     let mut input = Input::new(); // reset
 
@@ -93,3 +92,11 @@ fn main() {
         thread::sleep(Duration::from_millis(10));
     }
 }
+
+#[cfg(not(feature = "rsdl2-support"))]
+fn main() {
+    println!("Run the example with '--features rsdl2-support'!");
+    std::process::exit(1);
+}
+
+

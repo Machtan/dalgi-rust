@@ -7,5 +7,6 @@ pub enum Key {
     Up,
     Down,
     Space,
+    Return,
     Other(i32),
 }

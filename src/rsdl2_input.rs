@@ -22,6 +22,7 @@ fn map_scancode(key: Scancode) -> Key {
         Left => Key::Left,
         Right => Key::Right,
         Space => Key::Space,
+        Return => Key::Return,
         _ => Key::Other(key as i32),
     }
 }
