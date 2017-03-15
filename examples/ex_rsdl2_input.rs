@@ -13,12 +13,18 @@ use std::thread;
 
 input_state! {
     Input {
-        jump,
-        shoot,
-        left,
-        right
+        buttons: {
+            jump,
+            shoot,
+            left,
+            right,
+        }
+        notifications: {
+            quit,
+        }
     }
-    id_enum: ActionId
+    id_enum: ActionId;
+    mod_name: zzz;
 }
 
 #[cfg(feature = "rsdl2-support")]
@@ -27,12 +33,12 @@ fn main() {
     let context = rsdl2::init().everything().finish().expect("init failed");
     let mut event_context = context.events().expect("Event subsystem not initialized");
     let video_context = context.video().expect("Video subsystem not initialized");
-    let window = video_context.build_window()
+    let mut window = video_context.build_window()
         .title("SDL Game")
         .center(true, true)
         .finish()
         .expect("Could not create window");
-    let renderer = window.build_renderer().finish().expect("Could not build renderer");
+    let mut renderer = window.build_renderer().finish().expect("Could not build renderer");
     let clear_color = (255, 200, 220);
     let cornflower = (154, 206, 235);
     let mut rect = Rect::new(100, 100, 100, 100);
@@ -43,24 +49,19 @@ fn main() {
     mapper.add(ActionId::jump, Key::Up);
     mapper.add(ActionId::right, Key::Right);
     mapper.add(ActionId::left, Key::Left);
+    mapper.add(ActionId::quit, Notification::QuitRequest);
 
     let mut input = Input::new(); // reset
 
-    'main: loop {
-        use rsdl2::events::EventKind::*;
-        
+    'main: loop {        
         input.advance_frame();
         
         for event in event_context.events() {
-            match event.kind {
-                Quit => {
-                    println!("User-requested Quit!");
-                    break 'main;
-                }
-                other => {
-                    mapper.map(&other, &mut input);
-                }
-            }
+            mapper.map(&event, &mut input);
+        }
+        
+        if input.notification.quit {
+            break 'main;
         }
         
         if input.jump.pressed {

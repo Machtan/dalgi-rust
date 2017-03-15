@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::marker::Copy;
 pub use input_key::Key;
+pub use notification::Notification;
 
 
 // Consider making these u8 flags (pro: size, con: funcall syntax)
@@ -46,11 +47,19 @@ pub trait InputState {
     type Identifier: Copy;
     
     /// Returns a reference to the state of a button from its identifier.
-    fn get_option(&mut self, id: Self::Identifier) -> &mut ButtonValue;
+    fn get_option<'a>(&'a mut self, id: Self::Identifier) -> InputRef<'a>;
     
     /// Updates the state in preparation of the input in the next game frame.
     /// This ensures that old input changes are cleared.
     fn advance_frame(&mut self);
+}
+
+/// The value of an input option.
+pub enum InputRef<'a> {
+    /// The state of a button.
+    Button(&'a mut ButtonValue),
+    /// Whether a notification was sent or not.
+    Notification(&'a mut bool),
 }
 
 #[macro_export]
@@ -79,12 +88,49 @@ pub trait InputState {
 /// }
 /// ```
 macro_rules! input_state {
-    ( $name:ident { $($input:ident),* } id_enum: $id_enum:ident ) => {
+    ( 
+        $name:ident { 
+            buttons: {
+                $($button:ident , )*
+            }
+            notifications: {
+                $($notification:ident , )*
+            }
+        }
+        id_enum: $id_enum:ident;
+        mod_name: $mod_name:ident;
+    ) => {
+        mod $mod_name {
+            #[derive(Debug, Clone, PartialEq)]
+            pub struct NotificationState {
+                $(
+                    pub $notification: bool,
+                )*
+            }
+            
+            impl NotificationState {
+                pub fn new() -> NotificationState {
+                    NotificationState {
+                        $(
+                            $notification: false,
+                        )*
+                    }
+                }
+                
+                pub fn advance_frame(&mut self) {
+                    $(
+                        self.$notification = false;
+                    )*
+                }
+            }
+        }
+        
         /// The input state of a game.
         #[derive(Debug, Clone, PartialEq)]
         pub struct $name {
+            notification: $mod_name::NotificationState,
             $(
-                pub $input: ButtonValue,
+                pub $button: ButtonValue,
             )*
         }
         
@@ -92,7 +138,10 @@ macro_rules! input_state {
         #[derive(Debug, Clone, Copy, PartialEq)]
         pub enum $id_enum {
             $(
-                $input,
+                $button,
+            )*
+            $(
+                $notification,
             )*
         }
         
@@ -100,8 +149,9 @@ macro_rules! input_state {
             /// Creates a new input state.
             pub fn new() -> Self {
                 $name {
+                    notification: $mod_name::NotificationState::new(),
                     $(
-                        $input: ButtonValue::new(),
+                        $button: ButtonValue::new(),
                     )*
                 }
             }
@@ -110,18 +160,22 @@ macro_rules! input_state {
         impl InputState for $name {
             type Identifier = $id_enum;
             
-            fn get_option(&mut self, id: $id_enum) -> &mut ButtonValue {
+            fn get_option<'a>(&'a mut self, id: $id_enum) -> dalgi::input::InputRef<'a> {
                 match id {
                     $(
-                        $id_enum::$input => &mut self.$input,
+                        $id_enum::$button => dalgi::input::InputRef::Button(&mut self.$button),
+                    )*
+                    $(
+                        $id_enum::$notification => dalgi::input::InputRef::Notification(&mut self.notification.$notification),
                     )*
                 }
             }
             
             fn advance_frame(&mut self) {
                 $(
-                    self.$input.advance_frame();
+                    self.$button.advance_frame();
                 )*
+                self.notification.advance_frame();
             }
         }
     }
@@ -190,6 +244,7 @@ impl From<Key> for KeyDesc {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum InputDesc {
     Key(KeyDesc),
+    Notification(Notification),
 }
 // TODO: Handle modifier checks, somehow (in InputMapper?)
 
@@ -205,9 +260,17 @@ impl From<Key> for InputDesc {
     }
 }
 
+impl From<Notification> for InputDesc {
+    fn from(notification: Notification) -> InputDesc {
+        InputDesc::Notification(notification)
+    }
+}
+
 /// The representation of a change to the input state.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InputChange {
     Key(KeyDesc, ButtonChange),
+    Notification(Notification),
 }
 
 impl InputChange {
@@ -218,7 +281,14 @@ impl InputChange {
         use self::InputChange::*;
         match *self {
             Key(desc, _) => InputDesc::Key(desc),
+            Notification(notification) => InputDesc::Notification(notification),
         }
+    }
+}
+
+impl From<Notification> for InputChange {
+    fn from(notification: Notification) -> InputChange {
+        InputChange::Notification(notification)
     }
 }
 
@@ -259,6 +329,7 @@ impl<ActionId: Copy> InputMapper<ActionId> {
               S: InputState<Identifier = ActionId>
     {
         use self::ButtonChange::*;
+        use self::InputRef::*;
         event.describe_changes(|change| {
             let action_ids = match self.mappings.get(&change.input()) {
                 Some(action_ids) => action_ids,
@@ -266,9 +337,8 @@ impl<ActionId: Copy> InputMapper<ActionId> {
             };
             
             for action_id in action_ids {
-                let mut value = state.get_option(*action_id);
-                match change {
-                    InputChange::Key(_, state) => {
+                match (&change, state.get_option(*action_id)) {
+                    (&InputChange::Key(_, state), Button(value)) => {
                         match state {
                             Pressed => {
                                 value.pressed = true;
@@ -282,6 +352,20 @@ impl<ActionId: Copy> InputMapper<ActionId> {
                                 value.repeats += 1;
                             }
                         }
+                    }
+                    (&InputChange::Key(_, state), Notification(received)) => {
+                        match state {
+                            Pressed => {
+                                *received = true;
+                            }
+                            Released | Repeated => {}
+                        }
+                    }
+                    (&InputChange::Notification(_), Notification(received)) => {
+                        *received = true;
+                    }
+                    (_, Button(_)) => {
+                        panic!("Button states should only be set by key events");
                     }
                 }
             }

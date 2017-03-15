@@ -2,6 +2,8 @@
 extern crate rsdl2;
 
 mod input_key;
+mod notification;
+
 #[macro_use]
 pub mod input;
 

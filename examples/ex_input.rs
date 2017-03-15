@@ -4,10 +4,14 @@ use dalgi::input::*;
 
 input_state! {
     Input {
-        jump,
-        shoot
+        buttons: {
+            jump,
+            shoot,
+        }
+        notifications: {}
     }
-    id_enum: ActionId
+    id_enum: ActionId;
+    mod_name: zzz;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -51,9 +55,8 @@ pub fn main() {
     input.jump.pressed = true;
     println!("jump: {:?}", input.jump);
 
-    {
-        let mut shoot = input.get_option(ActionId::shoot);
-        shoot.held = true;
+    if let InputRef::Button(state) = input.get_option(ActionId::shoot) {
+        state.held = true;
     }
 
     println!("shoot: {:?}", input.shoot);

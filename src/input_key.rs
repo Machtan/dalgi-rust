@@ -8,5 +8,9 @@ pub enum Key {
     Down,
     Space,
     Return,
+    One,
+    Two,
+    Three,
+    Four,
     Other(i32),
 }

@@ -10,6 +10,11 @@ fn map_keycode(key: Keycode) -> Key {
         Left => Key::Left,
         Right => Key::Right,
         Space => Key::Space,
+        Return => Key::Return,
+        One => Key::One,
+        Two => Key::Two,
+        Three => Key::Three,
+        Four => Key::Four,
         _ => Key::Other(key as i32),
     }
 }
@@ -23,6 +28,10 @@ fn map_scancode(key: Scancode) -> Key {
         Right => Key::Right,
         Space => Key::Space,
         Return => Key::Return,
+        One => Key::One,
+        Two => Key::Two,
+        Three => Key::Three,
+        Four => Key::Four,
         _ => Key::Other(key as i32),
     }
 }
@@ -51,6 +60,9 @@ impl DescribeInputChange for EventKind {
                 handler(key_change(keysym, ButtonChange::Released));
                 handler(scan_change(keysym, ButtonChange::Released));
             },
+            Quit => {
+                handler(Notification::QuitRequest.into());
+            }
             _ => {},
         }
     }
