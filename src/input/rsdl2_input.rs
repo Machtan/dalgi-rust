@@ -44,7 +44,7 @@ fn scan_change(keysym: Keysym, state: ButtonChange) -> InputChange {
     InputChange::Key(KeyDesc::new(map_scancode(keysym.scancode)).scancode(), state)
 }
 
-impl DescribeInputChange for EventKind {
+impl DescribeInputChanges for EventKind {
     fn describe_changes<F: FnMut(InputChange)>(&self, mut handler: F) {
         use rsdl2::events::EventKind::*;
         match *self {
@@ -68,7 +68,7 @@ impl DescribeInputChange for EventKind {
     }
 }
 
-impl DescribeInputChange for Event {
+impl DescribeInputChanges for Event {
     fn describe_changes<F: FnMut(InputChange)>(&self, handler: F) {
         self.kind.describe_changes(handler);
     }

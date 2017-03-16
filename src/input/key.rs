@@ -1,3 +1,4 @@
+//! Keyboard key values.
 
 /// A physical or virtual keyboard key.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]

@@ -39,7 +39,7 @@ fn map_key(key: TestKey) -> Key {
     }
 }
 
-impl DescribeInputChange for TestEvent {
+impl DescribeInputChanges for TestEvent {
     fn describe_changes<F: FnMut(InputChange)>(&self, mut handler: F) {
         use self::TestEvent::*;
         match *self {
