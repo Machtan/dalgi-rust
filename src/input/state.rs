@@ -1,9 +1,54 @@
 //! Functionality to describe an input state.
 
+/// An input value that knows how to change its state in the next game frame.
+pub trait AdvanceFrame {
+    /// Advance this value to the next frame.
+    ///
+    /// # Examples
+    /// ```rust,ignore
+    /// impl AdvanceFrame for ButtonValue {
+    ///     fn advance_frame(&mut self) {
+    ///         // The button has not been pressed in the new frame.
+    ///         self.pressed = false;
+    ///         // If the button was held, it is still held in the new frame.
+    ///         self.held = self.held;
+    ///         // The button has not been released in the new frame.
+    ///         self.released = false;
+    ///         // The button has not been repeated in the new frame.
+    ///         self.repeats = 0;
+    ///     }
+    /// }
+    /// ```
+    fn advance_frame(&mut self);
+}
 
+impl AdvanceFrame for bool {
+    fn advance_frame(&mut self) {
+        *self = false
+    }
+}
 
-// Consider making these u8 flags (pro: size, con: funcall syntax)
-// Note: The state stystem can't handle key repeats very well ?
+impl AdvanceFrame for ButtonValue {
+    fn advance_frame(&mut self) {
+        self.pressed = false;
+        self.released = false;
+        self.repeats = 0;
+    }
+}
+
+pub trait InputState: AdvanceFrame {
+    /// Identifies a button-style input.
+    type ButtonId;
+
+    /// Identifies a notification-style input.
+    type NotificationId;
+
+    /// Returns the state of the button.
+    fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue;
+
+    /// Returns the state of the notification.
+    fn get_notification<'a>(&'a mut self, id: &Self::NotificationId) -> &'a mut bool;
+}
 
 /// The value of a button-type input in a single game frame.
 ///
@@ -12,7 +57,7 @@
 ///
 /// The button can be both pressed and released in the same frame, so if you
 /// need to know if the button is left pressed or not, check the 'held' member.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct ButtonValue {
     pub pressed: bool,
     pub held: bool,
@@ -30,33 +75,4 @@ impl ButtonValue {
             repeats: 0,
         }
     }
-    
-    /// Advances the state of the button to the next frame.
-    pub fn advance_frame(&mut self) {
-        self.pressed = false;
-        self.released = false;
-        self.repeats = 0;
-    }
-}
-
-/// Describes the input state of a game.
-/// This currently includes the state of all button-type actions.
-pub trait InputState {
-    /// The type that identifies a button-type input in the state.
-    type Identifier: Copy;
-    
-    /// Returns a reference to the state of a button from its identifier.
-    fn get_option<'a>(&'a mut self, id: Self::Identifier) -> InputRef<'a>;
-    
-    /// Updates the state in preparation of the input in the next game frame.
-    /// This ensures that old input changes are cleared.
-    fn advance_frame(&mut self);
-}
-
-/// The value of an input option.
-pub enum InputRef<'a> {
-    /// The state of a button.
-    Button(&'a mut ButtonValue),
-    /// Whether a notification was sent or not.
-    Notification(&'a mut bool),
 }

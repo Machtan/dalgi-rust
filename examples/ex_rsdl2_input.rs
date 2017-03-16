@@ -6,25 +6,26 @@ extern crate dalgi;
 extern crate rsdl2;
 
 #[cfg(feature = "rsdl2-support")]
-use rsdl2::{Rect};
+use rsdl2::Rect;
 use dalgi::input::*;
 use std::time::Duration;
 use std::thread;
 
-input_state! {
-    Input {
-        buttons: {
+input! {
+    struct Input {
+        [button]
+        struct ButtonState<ButtonId> {
             jump,
             shoot,
             left,
             right,
         }
-        notifications: {
+        
+        [notification]
+        struct NotificationState<NotificationId> {
             quit,
         }
     }
-    id_enum: ActionId;
-    mod_name: zzz;
 }
 
 #[cfg(feature = "rsdl2-support")]
@@ -42,54 +43,54 @@ fn main() {
     let clear_color = (255, 200, 220);
     let cornflower = (154, 206, 235);
     let mut rect = Rect::new(100, 100, 100, 100);
-        
+
     // Setup input
     let mut mapper = InputMapper::new();
-    mapper.add(ActionId::shoot, Key::Space);
-    mapper.add(ActionId::jump, Key::Up);
-    mapper.add(ActionId::right, Key::Right);
-    mapper.add(ActionId::left, Key::Left);
-    mapper.add(ActionId::quit, Notification::QuitRequest);
+    mapper.add_button(ButtonId::shoot, Key::Space);
+    mapper.add_button(ButtonId::jump, Key::Up);
+    mapper.add_button(ButtonId::right, Key::Right);
+    mapper.add_button(ButtonId::left, Key::Left);
+    mapper.add_notification(NotificationId::quit, Notification::QuitRequest);
 
-    let mut input = Input::new(); // reset
+    let mut input = Input::new();
 
-    'main: loop {        
+    'main: loop {
         input.advance_frame();
-        
+
         for event in event_context.events() {
             mapper.map(&event, &mut input);
         }
-        
+
         if input.notification.quit {
             break 'main;
         }
-        
-        if input.jump.pressed {
+
+        if input.button.jump.pressed {
             println!("Jump!");
             rect.move_by(0, -5);
         }
-        if input.jump.released && ! input.jump.held {
+        if input.button.jump.released && !input.button.jump.held {
             rect.move_by(0, 5);
         }
-        if input.shoot.pressed {
+        if input.button.shoot.pressed {
             println!("Shoot!");
         }
-        match (input.left.held, input.right.held) {
-            (true, true) => {}, //println!("Holding still!"),
+        match (input.button.left.held, input.button.right.held) {
+            (true, true) => {} //println!("Holding still!"),
             (true, false) => {
                 rect.move_by(-10, 0);
-            },
+            }
             (false, true) => {
                 rect.move_by(10, 0);
             }
             _ => {}
         }
-        
+
         renderer.color(clear_color).clear().unwrap();
         renderer.color(cornflower).fill_rect(rect).unwrap();
 
         renderer.present();
-        
+
         thread::sleep(Duration::from_millis(10));
     }
 }
@@ -99,5 +100,3 @@ fn main() {
     println!("Run the example with '--features rsdl2-support'!");
     std::process::exit(1);
 }
-
-

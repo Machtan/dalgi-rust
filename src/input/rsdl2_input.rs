@@ -37,11 +37,12 @@ fn map_scancode(key: Scancode) -> Key {
 }
 
 fn key_change(keysym: Keysym, state: ButtonChange) -> InputChange {
-    InputChange::Key(KeyDesc::new(map_keycode(keysym.keycode)),state)
+    InputChange::Key(KeyDesc::new(map_keycode(keysym.keycode)), state)
 }
 
 fn scan_change(keysym: Keysym, state: ButtonChange) -> InputChange {
-    InputChange::Key(KeyDesc::new(map_scancode(keysym.scancode)).scancode(), state)
+    InputChange::Key(KeyDesc::new(map_scancode(keysym.scancode)).scancode(),
+                     state)
 }
 
 impl DescribeInputChanges for EventKind {
@@ -51,19 +52,19 @@ impl DescribeInputChanges for EventKind {
             KeyDown(keysym) => {
                 handler(key_change(keysym, ButtonChange::Pressed));
                 handler(scan_change(keysym, ButtonChange::Pressed));
-            },
+            }
             KeyRepeat(keysym) => {
                 handler(key_change(keysym, ButtonChange::Repeated));
                 handler(scan_change(keysym, ButtonChange::Repeated));
-            },
+            }
             KeyUp(keysym) => {
                 handler(key_change(keysym, ButtonChange::Released));
                 handler(scan_change(keysym, ButtonChange::Released));
-            },
+            }
             Quit => {
                 handler(Notification::QuitRequest.into());
             }
-            _ => {},
+            _ => {}
         }
     }
 }

@@ -43,3 +43,9 @@ pub trait DescribeInputChanges {
     /// **Note**: If the changes cannot be described, just don't call the handler.
     fn describe_changes<F: FnMut(InputChange)>(&self, handler: F);
 }
+
+impl DescribeInputChanges for InputChange {
+    fn describe_changes<F: FnMut(InputChange)>(&self, mut handler: F) {
+        handler(self.clone())
+    }
+}

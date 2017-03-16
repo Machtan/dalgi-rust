@@ -33,7 +33,7 @@ impl KeyDesc {
     }
 
     /// Builder method to mark this input to use the scancode rather than
-    /// key code. 
+    /// key code.
     /// The scancode is the physical keyboard location of the button, whereas
     /// the key code is what this button is mapped to inside the OS.
     pub fn scancode(mut self) -> KeyDesc {

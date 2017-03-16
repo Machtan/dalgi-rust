@@ -1,120 +1,104 @@
 //! Convenience macros.
 
-
-/// Creates a new struct to hold the state of the input for the game,
-/// along with an enum to access each button state inside it.
+/// Generates a set of structs and enums to model an input state.
 ///
-/// **Note**: The id_enum names match the declared button names, and will
-/// therefore usually be lowercase.
-///
-/// The macro requires the following items in scope:
-///
-/// `use dalgi::input::{ButtonValue};`
-///
-/// # Examples
-/// ```
-/// use dalgi::input::{ButtonValue};
-/// 
-/// input_state! {
-///     Input {
-///         jump,
-///         shoot,
-///         left,
-///         right
-///     }
-///     id_enum: ActionId
-/// }
-/// ```
+/// For a rough view of what is generated, see `examples/ex_macroless.rs`.
 #[macro_export]
-macro_rules! input_state {
-    ( 
-        $name:ident { 
-            buttons: {
-                $($button:ident , )*
-            }
-            notifications: {
-                $($notification:ident , )*
-            }
-        }
-        id_enum: $id_enum:ident;
-        mod_name: $mod_name:ident;
-    ) => {
-        mod $mod_name {
-            #[derive(Debug, Clone, PartialEq)]
-            pub struct NotificationState {
+macro_rules! input {
+    (
+        struct $input_type:ident {
+            [ button ]
+            struct $button_type:ident < $button_id:ident > {
                 $(
-                    pub $notification: bool,
+                    $button:ident ,
                 )*
             }
-            
-            impl NotificationState {
-                pub fn new() -> NotificationState {
-                    NotificationState {
-                        $(
-                            $notification: false,
-                        )*
-                    }
-                }
-                
-                pub fn advance_frame(&mut self) {
-                    $(
-                        self.$notification = false;
-                    )*
-                }
+
+            [ notification ]
+            struct $notification_type:ident < $notification_id:ident > {
+                $(
+                    $notification:ident ,
+                )*
             }
         }
-        
-        /// The input state of a game.
-        #[derive(Debug, Clone, PartialEq)]
-        pub struct $name {
-            notification: $mod_name::NotificationState,
+    ) => {
+        /// The state of a set of button-style inputs [macro-generated].
+        #[derive(Debug, Clone, PartialEq, Eq, Default)]
+        pub struct $button_type {
             $(
-                pub $button: ButtonValue,
+                $button : ButtonValue ,
             )*
         }
         
+        /// The identifier of a member of the $button_type struct [macro_generated].
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone, Copy, PartialEq)]
-        pub enum $id_enum {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub enum $button_id {
             $(
-                $button,
-            )*
-            $(
-                $notification,
+                $button ,
             )*
         }
         
-        impl $name {
+        /// The state of a set of notification-style inputs [macro-generated].
+        #[derive(Debug, Clone, PartialEq, Eq, Default)]
+        pub struct $notification_type {
+            $(
+                $notification : bool ,
+            )*
+        }
+        
+        /// The identifier of a member of the $notification_type struct [macro_generated].
+        #[allow(non_camel_case_types)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub enum $notification_id {
+            $(
+                $notification ,
+            )*
+        }
+        
+        /// An input state which can be used with an event mapper [macro_generated].
+        #[derive(Debug, Clone, PartialEq, Eq, Default)]
+        pub struct $input_type {
+            pub button: self::$button_type,
+            pub notification: self::$notification_type,
+        }
+        
+        impl $input_type {
             /// Creates a new input state.
-            pub fn new() -> Self {
-                $name {
-                    notification: $mod_name::NotificationState::new(),
-                    $(
-                        $button: ButtonValue::new(),
-                    )*
-                }
+            fn new() -> $input_type {
+                $input_type::default()
             }
         }
         
-        impl InputState for $name {
-            type Identifier = $id_enum;
-            
-            fn get_option<'a>(&'a mut self, id: $id_enum) -> dalgi::input::InputRef<'a> {
-                match id {
-                    $(
-                        $id_enum::$button => dalgi::input::InputRef::Button(&mut self.$button),
-                    )*
-                    $(
-                        $id_enum::$notification => dalgi::input::InputRef::Notification(&mut self.notification.$notification),
-                    )*
-                }
-            }
-            
+        impl dalgi::input::AdvanceFrame for $input_type {
             fn advance_frame(&mut self) {
                 $(
-                    self.$button.advance_frame();
+                    self.button.$button.advance_frame();
                 )*
-                self.notification.advance_frame();
+                $(
+                    self.notification.$notification.advance_frame();
+                )*
+            }
+        }
+        
+        impl dalgi::input::InputState for $input_type {
+            type ButtonId = self::$button_id;
+            type NotificationId = self::$notification_id;
+            
+            fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue {
+                match *id {
+                    $(
+                        self::$button_id::$button => &mut self.button.$button ,
+                    )*
+                }
+            }
+    
+            fn get_notification<'a>(&'a mut self, id: &Self::NotificationId) -> &'a mut bool {
+                match *id {
+                    $(
+                        self::$notification_id::$notification => &mut self.notification.$notification ,
+                    )*
+                }
             }
         }
     }
