@@ -2,7 +2,7 @@
 
 use std::collections::{HashMap, HashSet};
 use super::key::Key;
-use super::notification::Notification;
+use super::signal::Signal;
 use super::description::{InputDesc, KeyDesc};
 use super::change::{DescribeInputChanges, InputChange};
 use super::state::{InputState, InputIndex};
@@ -16,7 +16,7 @@ impl ButtonUpdateSource {
     fn try_from(desc: InputDesc) -> Option<ButtonUpdateSource> {
         match desc {
             InputDesc::Key(keydesc) => Some(ButtonUpdateSource::Key(keydesc)),
-            InputDesc::Notification(_) => None,
+            InputDesc::Signal(_) => None,
         }
     }
 }
@@ -41,35 +41,35 @@ impl Into<InputDesc> for ButtonUpdateSource {
     }
 }
 
-/// A description of events that can change the state of a notification-type input.
-pub enum NotificationUpdateSource {
-    Notification(Notification),
+/// A description of events that can change the state of a signal-type input.
+pub enum SignalUpdateSource {
+    Signal(Signal),
     Key(KeyDesc),
 }
 
-impl From<KeyDesc> for NotificationUpdateSource {
-    fn from(keydesc: KeyDesc) -> NotificationUpdateSource {
-        NotificationUpdateSource::Key(keydesc)
+impl From<KeyDesc> for SignalUpdateSource {
+    fn from(keydesc: KeyDesc) -> SignalUpdateSource {
+        SignalUpdateSource::Key(keydesc)
     }
 }
 
-impl From<Key> for NotificationUpdateSource {
-    fn from(key: Key) -> NotificationUpdateSource {
-        NotificationUpdateSource::Key(KeyDesc::new(key))
+impl From<Key> for SignalUpdateSource {
+    fn from(key: Key) -> SignalUpdateSource {
+        SignalUpdateSource::Key(KeyDesc::new(key))
     }
 }
 
-impl From<Notification> for NotificationUpdateSource {
-    fn from(notification: Notification) -> NotificationUpdateSource {
-        NotificationUpdateSource::Notification(notification)
+impl From<Signal> for SignalUpdateSource {
+    fn from(signal: Signal) -> SignalUpdateSource {
+        SignalUpdateSource::Signal(signal)
     }
 }
 
-impl Into<InputDesc> for NotificationUpdateSource {
-    fn into(self: NotificationUpdateSource) -> InputDesc {
+impl Into<InputDesc> for SignalUpdateSource {
+    fn into(self: SignalUpdateSource) -> InputDesc {
         match self {
-            NotificationUpdateSource::Key(desc) => InputDesc::Key(desc),
-            NotificationUpdateSource::Notification(note) => InputDesc::Notification(note),
+            SignalUpdateSource::Key(desc) => InputDesc::Key(desc),
+            SignalUpdateSource::Signal(note) => InputDesc::Signal(note),
         }
     }
 }
@@ -80,7 +80,7 @@ impl Into<InputDesc> for NotificationUpdateSource {
 #[derive(Debug, Clone)]
 pub struct InputMap<BI: InputIndex, NI: InputIndex> {
     buttons: HashMap<InputDesc, Vec<BI>>,
-    notifications: HashMap<InputDesc, Vec<NI>>,
+    signals: HashMap<InputDesc, Vec<NI>>,
 }
 
 impl<BI: InputIndex, NI: InputIndex> InputMap<BI, NI> {
@@ -88,7 +88,7 @@ impl<BI: InputIndex, NI: InputIndex> InputMap<BI, NI> {
     pub fn new() -> InputMap<BI, NI> {
         InputMap {
             buttons: HashMap::new(),
-            notifications: HashMap::new(),
+            signals: HashMap::new(),
         }
     }
 
@@ -97,9 +97,9 @@ impl<BI: InputIndex, NI: InputIndex> InputMap<BI, NI> {
         self.buttons.entry(desc.into().into()).or_insert_with(Vec::new).push(action);
     }
 
-    /// Adds a mapping from a notification input source to a notification action.
-    pub fn add_notification<D: Into<NotificationUpdateSource>>(&mut self, action: NI, desc: D) {
-        self.notifications.entry(desc.into().into()).or_insert_with(Vec::new).push(action);
+    /// Adds a mapping from a signal input source to a signal action.
+    pub fn add_signal<D: Into<SignalUpdateSource>>(&mut self, action: NI, desc: D) {
+        self.signals.entry(desc.into().into()).or_insert_with(Vec::new).push(action);
     }
 
     /// Returns the ids of the buttons bound by this map.
@@ -134,7 +134,7 @@ impl<BI: InputIndex, NI: InputIndex> InputMap<BI, NI> {
     /// Applies the changes described by the given event to the input state.
     pub fn apply<E, S>(&self, event: &E, state: &mut S)
         where E: DescribeInputChanges,
-              S: InputState<ButtonId = BI, NotificationId = NI>
+              S: InputState<ButtonId = BI, SignalId = NI>
     {
         use super::ButtonChange::*;
         event.describe_changes(|change| {
@@ -158,24 +158,24 @@ impl<BI: InputIndex, NI: InputIndex> InputMap<BI, NI> {
                             }
                         }
                     }
-                    InputChange::Notification(_) => unreachable!(),
+                    InputChange::Signal(_) => unreachable!(),
                 }
             }
 
             // NOTIFICATION MAPPING
-            for notification_id in self.notifications.get(&input).into_iter().flat_map(|a| a) {
-                let mut notification_received = state.get_notification(&notification_id);
+            for signal_id in self.signals.get(&input).into_iter().flat_map(|a| a) {
+                let mut signal_received = state.get_signal(&signal_id);
                 match change {
                     InputChange::Key(_, state) => {
                         match state {
                             Pressed => {
-                                *notification_received = true;
+                                *signal_received = true;
                             }
                             Released | Repeated => {}
                         }
                     }
-                    InputChange::Notification(_) => {
-                        *notification_received = true;
+                    InputChange::Signal(_) => {
+                        *signal_received = true;
                     }
                 }
             }

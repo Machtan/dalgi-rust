@@ -14,10 +14,10 @@ macro_rules! input {
                 )*
             }
 
-            [ notification ]
-            struct $notification_type:ident < $notification_id:ident > {
+            [ signal ]
+            struct $signal_type:ident < $signal_id:ident > {
                 $(
-                    $notification:ident ,
+                    $signal:ident ,
                 )*
             }
         }
@@ -39,20 +39,20 @@ macro_rules! input {
             )*
         }
         
-        /// The state of a set of notification-style inputs [macro-generated].
+        /// The state of a set of signal-style inputs [macro-generated].
         #[derive(Debug, Clone, PartialEq, Eq, Default)]
-        pub struct $notification_type {
+        pub struct $signal_type {
             $(
-                $notification : bool ,
+                $signal : bool ,
             )*
         }
         
-        /// The identifier of a member of the $notification_type struct [macro_generated].
+        /// The identifier of a member of the $signal_type struct [macro_generated].
         #[allow(non_camel_case_types)]
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-        pub enum $notification_id {
+        pub enum $signal_id {
             $(
-                $notification ,
+                $signal ,
             )*
         }
         
@@ -60,7 +60,7 @@ macro_rules! input {
         #[derive(Debug, Clone, PartialEq, Eq, Default)]
         pub struct $input_type {
             pub button: self::$button_type,
-            pub notification: self::$notification_type,
+            pub signal: self::$signal_type,
         }
         
         impl $input_type {
@@ -76,14 +76,14 @@ macro_rules! input {
                     self.button.$button.advance_frame();
                 )*
                 $(
-                    self.notification.$notification.advance_frame();
+                    self.signal.$signal.advance_frame();
                 )*
             }
         }
         
         impl dalgi::input::InputState for $input_type {
             type ButtonId = self::$button_id;
-            type NotificationId = self::$notification_id;
+            type SignalId = self::$signal_id;
             
             fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue {
                 match *id {
@@ -93,10 +93,10 @@ macro_rules! input {
                 }
             }
     
-            fn get_notification<'a>(&'a mut self, id: &Self::NotificationId) -> &'a mut bool {
+            fn get_signal<'a>(&'a mut self, id: &Self::SignalId) -> &'a mut bool {
                 match *id {
                     $(
-                        self::$notification_id::$notification => &mut self.notification.$notification ,
+                        self::$signal_id::$signal => &mut self.signal.$signal ,
                     )*
                 }
             }

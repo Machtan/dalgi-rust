@@ -10,8 +10,8 @@ input! {
             shoot,
         }
         
-        [notification]
-        struct NotificationState<NotificationId> {
+        [signal]
+        struct SignalState<SignalId> {
             quit,
         }
     }

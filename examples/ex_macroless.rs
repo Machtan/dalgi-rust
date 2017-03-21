@@ -2,14 +2,14 @@ extern crate dalgi;
 use dalgi::input::*;
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum ButtonId {
     Jump,
     Shoot,
 }
 
-#[derive(Debug, Clone, Copy)]
-enum NotificationId {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum SignalId {
     Quit,
 }
 
@@ -20,27 +20,27 @@ struct ButtonState {
 }
 
 #[derive(Debug, Clone, Default)]
-struct NotificationState {
+struct SignalState {
     pub quit: bool,
 }
 
 #[derive(Debug, Clone, Default)]
 struct Input {
     pub button: ButtonState,
-    pub notification: NotificationState,
+    pub signal: SignalState,
 }
 
 impl AdvanceFrame for Input {
     fn advance_frame(&mut self) {
         self.button.jump.advance_frame();
         self.button.shoot.advance_frame();
-        self.notification.quit.advance_frame();
+        self.signal.quit.advance_frame();
     }
 }
 
 impl InputState for Input {
     type ButtonId = ButtonId;
-    type NotificationId = NotificationId;
+    type SignalId = SignalId;
 
     fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue {
         match id {
@@ -49,9 +49,9 @@ impl InputState for Input {
         }
     }
 
-    fn get_notification<'a>(&'a mut self, id: &Self::NotificationId) -> &'a mut bool {
+    fn get_signal<'a>(&'a mut self, id: &Self::SignalId) -> &'a mut bool {
         match id {
-            &NotificationId::Quit => &mut self.notification.quit,
+            &SignalId::Quit => &mut self.signal.quit,
         }
     }
 }
@@ -61,7 +61,7 @@ fn main() {
     let mut map = InputMap::new();
     map.add_button(ButtonId::Jump, Key::Up);
     map.add_button(ButtonId::Shoot, Key::Space);
-    map.add_notification(NotificationId::Quit, Notification::QuitRequest);
+    map.add_signal(SignalId::Quit, Signal::QuitRequest);
 
     // TODO: Read from stdin and use that to simulate events.
 
@@ -79,8 +79,8 @@ fn main() {
     map.apply(&change, &mut input);
     println!("2 Shoot: {:?}", input.button.shoot);
 
-    println!("2 Quit: {}", input.notification.quit);
-    let change = InputChange::Notification(Notification::QuitRequest);
+    println!("2 Quit: {}", input.signal.quit);
+    let change = InputChange::Signal(Signal::QuitRequest);
     map.apply(&change, &mut input);
-    println!("2 Quit: {}", input.notification.quit);
+    println!("2 Quit: {}", input.signal.quit);
 }

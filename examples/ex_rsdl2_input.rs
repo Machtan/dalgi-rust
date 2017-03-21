@@ -21,8 +21,8 @@ input! {
             right,
         }
         
-        [notification]
-        struct NotificationState<NotificationId> {
+        [signal]
+        struct SignalState<SignalId> {
             quit,
         }
     }
@@ -50,7 +50,7 @@ fn main() {
     map.add_button(ButtonId::jump, Key::Up);
     map.add_button(ButtonId::right, Key::Right);
     map.add_button(ButtonId::left, Key::Left);
-    map.add_notification(NotificationId::quit, Notification::QuitRequest);
+    map.add_signal(SignalId::quit, Signal::QuitRequest);
 
     let mut input = Input::new();
 
@@ -61,7 +61,7 @@ fn main() {
             map.apply(&event, &mut input);
         }
 
-        if input.notification.quit {
+        if input.signal.quit {
             break 'main;
         }
 

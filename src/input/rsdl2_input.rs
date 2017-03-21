@@ -62,7 +62,7 @@ impl DescribeInputChanges for EventKind {
                 handler(scan_change(keysym, ButtonChange::Released));
             }
             Quit => {
-                handler(Notification::QuitRequest.into());
+                handler(Signal::QuitRequest.into());
             }
             _ => {}
         }

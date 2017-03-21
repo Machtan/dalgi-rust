@@ -1,10 +1,12 @@
 //! Keyboard key values.
 
-
+// The 'key' prefix is to allow doccomments (otherwise it has ambiguity since
+// it apparently thinks attributes can be identifiers too)
 macro_rules! key {
     (
         $(
-            $key:ident => $name:expr ,
+            $(#[$attr:meta])*
+            key $key:ident => $name:expr ,
         )*
     ) => {
         use std::borrow::Cow;
@@ -12,8 +14,10 @@ macro_rules! key {
         #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
         pub enum Key {
             $(
+                $( #[$attr] )*
                 $key ,
             )*
+            /// A key that isn't in dalgi, but can be identified by a number.
             Other(i32)
         }
         
@@ -42,22 +46,38 @@ macro_rules! key {
     };
     (
         $(
-            $key:ident => $name:expr
+            $(#[$attr:meta])*
+            key $key:ident => $name:expr
         ),*
     ) => {
-        key! { $( $key => $name , )* }
+        key! { 
+            $(  
+                $( $attr )*
+                key $key => $name , 
+            )*
+        }
     };
 }
 
 key! {
-    Left    => "left",
-    Right   => "right",
-    Up      => "up",
-    Down    => "down",
-    Space   => "space",
-    Return  => "return",
-    One     => "1",
-    Two     => "2",
-    Thre    => "3",
-    Four    => "4",
+    /// The left arrow.
+    key Left    => "left",
+    /// The right arrow.
+    key Right   => "right",
+    /// The up arrow.
+    key Up      => "up",
+    /// The left arrow.
+    key Down    => "down",
+    /// The space bar.
+    key Space   => "space",
+    /// The `return` or `enter` button.
+    key Return  => "return",
+    /// The number 1.
+    key One     => "1",
+    /// The number 2.
+    key Two     => "2",
+    /// The number 3.
+    key Three   => "3",
+    /// The number 4.
+    key Four    => "4",
 }

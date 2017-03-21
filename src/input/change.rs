@@ -1,20 +1,25 @@
 //! Functionality to describe changes to an input state.
 use super::description::{KeyDesc, InputDesc};
-use super::notification::Notification;
+use super::signal::Signal;
 
 /// The state of a button.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum ButtonChange {
+    /// The button is has just been pressed.
     Pressed,
+    /// The button has just been released.
     Released,
+    /// The button is held, and the input manager is firing a 'repeat' event.
     Repeated,
 }
 
 /// The representation of a change to the input state.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InputChange {
+    /// A keyboard button was changed.
     Key(KeyDesc, ButtonChange),
-    Notification(Notification),
+    /// A signal was sent.
+    Signal(Signal),
 }
 
 impl InputChange {
@@ -25,14 +30,14 @@ impl InputChange {
         use self::InputChange::*;
         match *self {
             Key(desc, _) => InputDesc::Key(desc),
-            Notification(notification) => InputDesc::Notification(notification),
+            Signal(signal) => InputDesc::Signal(signal),
         }
     }
 }
 
-impl From<Notification> for InputChange {
-    fn from(notification: Notification) -> InputChange {
-        InputChange::Notification(notification)
+impl From<Signal> for InputChange {
+    fn from(signal: Signal) -> InputChange {
+        InputChange::Signal(signal)
     }
 }
 
@@ -40,7 +45,7 @@ impl From<Notification> for InputChange {
 pub trait DescribeInputChanges {
     /// Tells the handler which changes this object represents.
     ///
-    /// **Note**: If the changes cannot be described, just don't call the handler.
+    /// **Note**: If the changes cannot be described by dalgi, just ignore the handler.
     fn describe_changes<F: FnMut(InputChange)>(&self, handler: F);
 }
 

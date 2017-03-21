@@ -1,3 +1,7 @@
+#![warn(missing_docs)]
+//! Game development utility library.
+
+
 #[cfg(feature = "rsdl2-support")]
 extern crate rsdl2;
 

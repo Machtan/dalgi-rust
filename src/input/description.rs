@@ -1,12 +1,21 @@
 //! Functionality to describe input events.
 
 use super::key::Key;
-use super::notification::Notification;
+use super::signal::Signal;
 
 /// Which representation of a key should be used (physical vs. virtual).
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum Keytype {
+    /// The key is a virtual key. This means that key 'a' refers to whatever
+    /// button on the keyboard that writes 'a' when pressed.
     Keycode,
+    /// The key is a physical key location. This means that key 'a' refers to
+    /// the button of the physical keyboard with the label 'a' on it, irregardless
+    /// of what is entered when the key is pressed.
+    ///
+    /// This is mainly useful when using other keys as arrow keys (ie: WASD)
+    /// or when relying on the location of the keys, rather than what letter
+    /// they start with (for instance using q w and e to toggle transformation modes.)
     Scancode,
 }
 
@@ -17,8 +26,11 @@ pub struct Mods(u16); // or whatevs. some bitflag map
 /// The description of a button on a keyboard.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct KeyDesc {
+    /// The key.
     pub key: Key,
+    /// Whether it is a key code (virtual) or scan code (physical) key.
     pub keytype: Keytype,
+    /// What modifiers should be pressed.
     pub mods: Mods,
 }
 
@@ -33,9 +45,9 @@ impl KeyDesc {
     }
 
     /// Attempts to parse a key description from the given string.
-    /// 
+    ///
     /// All key names are lowercased (invariant from `Key::from_name`)
-    /// 
+    ///
     /// # Mini-grammar
     /// - keycode: `a`
     /// - scancode: `[a]` or `[ a ]`
@@ -81,8 +93,10 @@ impl From<Key> for KeyDesc {
 /// The description of a physical game input.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum InputDesc {
+    /// The input is a keyboard button (ie: `Jump`).
     Key(KeyDesc),
-    Notification(Notification),
+    /// The input is some sort of signal (ie: `Quit`).
+    Signal(Signal),
 }
 // TODO: Handle modifier checks, somehow (in InputMap?)
 
@@ -98,8 +112,8 @@ impl From<Key> for InputDesc {
     }
 }
 
-impl From<Notification> for InputDesc {
-    fn from(notification: Notification) -> InputDesc {
-        InputDesc::Notification(notification)
+impl From<Signal> for InputDesc {
+    fn from(signal: Signal) -> InputDesc {
+        InputDesc::Signal(signal)
     }
 }

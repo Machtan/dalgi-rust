@@ -43,18 +43,20 @@ pub trait InputIndex: PartialEq + Eq + Hash + Copy {}
 
 impl<T> InputIndex for T where T: PartialEq + Eq + Hash + Copy {}
 
+/// Describes a type that can have its state updated by an InputMap.
+/// Such a type can be generated using the `input!` macro.
 pub trait InputState: AdvanceFrame {
     /// Identifies a button-style input.
     type ButtonId: InputIndex;
 
-    /// Identifies a notification-style input.
-    type NotificationId: InputIndex;
+    /// Identifies a signal-style input.
+    type SignalId: InputIndex;
 
     /// Returns the state of the button.
     fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue;
 
-    /// Returns the state of the notification.
-    fn get_notification<'a>(&'a mut self, id: &Self::NotificationId) -> &'a mut bool;
+    /// Returns the state of the signal.
+    fn get_signal<'a>(&'a mut self, id: &Self::SignalId) -> &'a mut bool;
 }
 
 /// The value of a button-type input in a single game frame.
@@ -66,9 +68,16 @@ pub trait InputState: AdvanceFrame {
 /// need to know if the button is left pressed or not, check the 'held' member.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct ButtonValue {
+    /// Whether the button was pressed down in this frame.
     pub pressed: bool,
+    /// Whether the button is held down in this frame.
     pub held: bool,
+    /// Whether the button was released in this frame.
     pub released: bool,
+    /// How many times a 'repeat' signal was received this frame.
+    ///
+    /// (the button was held down for so long that the OS started sending
+    /// 'repeat' events).
     pub repeats: u8,
 }
 
