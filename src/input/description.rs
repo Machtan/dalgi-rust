@@ -32,6 +32,30 @@ impl KeyDesc {
         }
     }
 
+    /// Attempts to parse a key description from the given string.
+    /// 
+    /// All key names are lowercased (invariant from `Key::from_name`)
+    /// 
+    /// # Mini-grammar
+    /// - keycode: `a`
+    /// - scancode: `[a]` or `[ a ]`
+    pub fn parse(mut pattern: &str) -> Option<KeyDesc> {
+        pattern = pattern.trim();
+        if pattern.starts_with("[") {
+            // Scancode
+            if let Some(end) = pattern.find("]") {
+                let inner = (&pattern[1..end]).trim();
+                Key::from_name(inner).map(|k| KeyDesc::new(k).scancode())
+            } else {
+                // Try to parse as '[' literal
+                Key::from_name(pattern).map(KeyDesc::new)
+            }
+        } else {
+            // Keycode
+            Key::from_name(pattern).map(KeyDesc::new)
+        }
+    }
+
     /// Builder method to mark this input to use the scancode rather than
     /// key code.
     /// The scancode is the physical keyboard location of the button, whereas
