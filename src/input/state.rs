@@ -1,5 +1,7 @@
 //! Functionality to describe an input state.
 
+use std::hash::Hash;
+
 /// An input value that knows how to change its state in the next game frame.
 pub trait AdvanceFrame {
     /// Advance this value to the next frame.
@@ -36,12 +38,17 @@ impl AdvanceFrame for ButtonValue {
     }
 }
 
+/// Bounds for a type that can be used to identify inputs in an input state.
+pub trait InputIndex: PartialEq + Eq + Hash + Copy {}
+
+impl<T> InputIndex for T where T: PartialEq + Eq + Hash + Copy {}
+
 pub trait InputState: AdvanceFrame {
     /// Identifies a button-style input.
-    type ButtonId;
+    type ButtonId: InputIndex;
 
     /// Identifies a notification-style input.
-    type NotificationId;
+    type NotificationId: InputIndex;
 
     /// Returns the state of the button.
     fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue;

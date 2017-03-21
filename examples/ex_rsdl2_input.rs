@@ -45,12 +45,12 @@ fn main() {
     let mut rect = Rect::new(100, 100, 100, 100);
 
     // Setup input
-    let mut mapper = InputMapper::new();
-    mapper.add_button(ButtonId::shoot, Key::Space);
-    mapper.add_button(ButtonId::jump, Key::Up);
-    mapper.add_button(ButtonId::right, Key::Right);
-    mapper.add_button(ButtonId::left, Key::Left);
-    mapper.add_notification(NotificationId::quit, Notification::QuitRequest);
+    let mut map = InputMap::new();
+    map.add_button(ButtonId::shoot, Key::Space);
+    map.add_button(ButtonId::jump, Key::Up);
+    map.add_button(ButtonId::right, Key::Right);
+    map.add_button(ButtonId::left, Key::Left);
+    map.add_notification(NotificationId::quit, Notification::QuitRequest);
 
     let mut input = Input::new();
 
@@ -58,7 +58,7 @@ fn main() {
         input.advance_frame();
 
         for event in event_context.events() {
-            mapper.map(&event, &mut input);
+            map.apply(&event, &mut input);
         }
 
         if input.notification.quit {

@@ -58,29 +58,29 @@ impl InputState for Input {
 
 fn main() {
     let mut input = Input::default();
-    let mut mapper = InputMapper::new();
-    mapper.add_button(ButtonId::Jump, Key::Up);
-    mapper.add_button(ButtonId::Shoot, Key::Space);
-    mapper.add_notification(NotificationId::Quit, Notification::QuitRequest);
+    let mut map = InputMap::new();
+    map.add_button(ButtonId::Jump, Key::Up);
+    map.add_button(ButtonId::Shoot, Key::Space);
+    map.add_notification(NotificationId::Quit, Notification::QuitRequest);
 
     // TODO: Read from stdin and use that to simulate events.
 
     println!("1 Jump: {:?}", input.button.jump);
     let change = InputChange::Key(KeyDesc::new(Key::Up), ButtonChange::Pressed);
-    mapper.map(&change, &mut input);
+    map.apply(&change, &mut input);
     println!("1 Jump: {:?}", input.button.jump);
     input.advance_frame();
     println!("2 Jump: {:?}", input.button.jump);
     let change = InputChange::Key(KeyDesc::new(Key::Up), ButtonChange::Released);
-    mapper.map(&change, &mut input);
+    map.apply(&change, &mut input);
     println!("2 Jump: {:?}", input.button.jump);
 
     let change = InputChange::Key(KeyDesc::new(Key::Space), ButtonChange::Pressed);
-    mapper.map(&change, &mut input);
+    map.apply(&change, &mut input);
     println!("2 Shoot: {:?}", input.button.shoot);
 
     println!("2 Quit: {}", input.notification.quit);
     let change = InputChange::Notification(Notification::QuitRequest);
-    mapper.map(&change, &mut input);
+    map.apply(&change, &mut input);
     println!("2 Quit: {}", input.notification.quit);
 }

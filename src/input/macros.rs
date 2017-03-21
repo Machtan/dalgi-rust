@@ -56,7 +56,7 @@ macro_rules! input {
             )*
         }
         
-        /// An input state which can be used with an event mapper [macro_generated].
+        /// An input state which can be used with an event map [macro_generated].
         #[derive(Debug, Clone, PartialEq, Eq, Default)]
         pub struct $input_type {
             pub button: self::$button_type,

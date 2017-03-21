@@ -1,15 +1,24 @@
 //! Functionality to map from events to input state changes.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use super::key::Key;
 use super::notification::Notification;
 use super::description::{InputDesc, KeyDesc};
 use super::change::{DescribeInputChanges, InputChange};
-use super::state::InputState;
+use super::state::{InputState, InputIndex};
 
 /// A description of events that can change the state of a button-type input.
 pub enum ButtonUpdateSource {
     Key(KeyDesc),
+}
+
+impl ButtonUpdateSource {
+    fn try_from(desc: InputDesc) -> Option<ButtonUpdateSource> {
+        match desc {
+            InputDesc::Key(keydesc) => Some(ButtonUpdateSource::Key(keydesc)),
+            InputDesc::Notification(_) => None,
+        }
+    }
 }
 
 impl From<KeyDesc> for ButtonUpdateSource {
@@ -65,18 +74,19 @@ impl Into<InputDesc> for NotificationUpdateSource {
     }
 }
 
+
 /// Associates abstract input descriptions with game actions, and maps input
 /// events to updates to a representation of the game's full action state.
 #[derive(Debug, Clone)]
-pub struct InputMapper<BI, NI> {
+pub struct InputMap<BI: InputIndex, NI: InputIndex> {
     buttons: HashMap<InputDesc, Vec<BI>>,
     notifications: HashMap<InputDesc, Vec<NI>>,
 }
 
-impl<BI, NI> InputMapper<BI, NI> {
-    /// Creates a new input mapper.
-    pub fn new() -> InputMapper<BI, NI> {
-        InputMapper {
+impl<BI: InputIndex, NI: InputIndex> InputMap<BI, NI> {
+    /// Creates a new input map.
+    pub fn new() -> InputMap<BI, NI> {
+        InputMap {
             buttons: HashMap::new(),
             notifications: HashMap::new(),
         }
@@ -92,8 +102,37 @@ impl<BI, NI> InputMapper<BI, NI> {
         self.notifications.entry(desc.into().into()).or_insert_with(Vec::new).push(action);
     }
 
+    /// Returns the ids of the buttons bound by this map.
+    pub fn bound_buttons(&self) -> HashSet<BI> {
+        self.buttons.values().flat_map(|v| v).map(|id| *id).collect()
+    }
+
+    /// Returns the sources
+    pub fn button_sources(&self, action: BI) -> Vec<ButtonUpdateSource> {
+        self.buttons
+            .iter()
+            .filter(|&(_, ids)| ids.contains(&action))
+            .map(|(d, _)| ButtonUpdateSource::try_from(d.clone()).unwrap())
+            .collect()
+    }
+
+    /// Adds all sources for button-type inputs that are bound by 'other' but
+    /// not by this maps.
+    /// This means that if this map doesn't map anything to 'shoot', it will get
+    /// bindings from both buttons C and D from the other map.
+    pub fn add_unbound_buttons_from(&mut self, other: &InputMap<BI, NI>) {
+        let own_buttons = self.bound_buttons();
+        for button_id in other.bound_buttons() {
+            if !own_buttons.contains(&button_id) {
+                for description in other.button_sources(button_id) {
+                    self.add_button(button_id, description);
+                }
+            }
+        }
+    }
+
     /// Applies the changes described by the given event to the input state.
-    pub fn map<E, S>(&self, event: &E, state: &mut S)
+    pub fn apply<E, S>(&self, event: &E, state: &mut S)
         where E: DescribeInputChanges,
               S: InputState<ButtonId = BI, NotificationId = NI>
     {

@@ -65,22 +65,22 @@ fn main() {
     input.button.shoot.held = true;
 
     println!("shoot: {:?}", input.button.shoot);
-    let mut mapper = InputMapper::new();
+    let mut map = InputMap::new();
 
-    mapper.add_button(ButtonId::shoot, Key::Space);
-    mapper.add_button(ButtonId::jump, Key::Up);
+    map.add_button(ButtonId::shoot, Key::Space);
+    map.add_button(ButtonId::jump, Key::Up);
 
     input = Input::new(); // reset
     let shoot_event = TestEvent::KeyDown(TestKey::Space);
     let jump_event = TestEvent::KeyDown(TestKey::Up);
     println!("1| {:?}", input);
-    mapper.map(&shoot_event, &mut input);
-    mapper.map(&jump_event, &mut input);
+    map.apply(&shoot_event, &mut input);
+    map.apply(&jump_event, &mut input);
     println!("2| {:?}", input);
     input.advance_frame();
     println!("2| {:?}", input);
     let shoot_end = TestEvent::KeyUp(TestKey::Space);
-    mapper.map(&shoot_end, &mut input);
+    map.apply(&shoot_end, &mut input);
     println!("3| {:?}", input);
     input.advance_frame();
     println!("4| {:?}", input);

@@ -60,7 +60,7 @@ pub enum InputDesc {
     Key(KeyDesc),
     Notification(Notification),
 }
-// TODO: Handle modifier checks, somehow (in InputMapper?)
+// TODO: Handle modifier checks, somehow (in InputMap?)
 
 impl From<KeyDesc> for InputDesc {
     fn from(keydesc: KeyDesc) -> InputDesc {

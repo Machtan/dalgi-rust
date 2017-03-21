@@ -6,7 +6,7 @@ mod notification;
 mod state;
 mod description;
 mod change;
-mod mapper;
+mod map;
 
 #[macro_use]
 mod macros;
@@ -19,4 +19,4 @@ pub use self::notification::Notification;
 pub use self::state::{InputState, ButtonValue, AdvanceFrame};
 pub use self::description::{Keytype, Mods, KeyDesc, InputDesc};
 pub use self::change::{DescribeInputChanges, ButtonChange, InputChange};
-pub use self::mapper::InputMapper;
+pub use self::map::InputMap;
