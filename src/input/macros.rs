@@ -26,7 +26,7 @@ macro_rules! input {
         #[derive(Debug, Clone, PartialEq, Eq, Default)]
         pub struct $button_type {
             $(
-                $button : ButtonValue ,
+                $button : dalgi::input::ButtonValue ,
             )*
         }
         
@@ -85,7 +85,7 @@ macro_rules! input {
             type ButtonId = self::$button_id;
             type SignalId = self::$signal_id;
             
-            fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut ButtonValue {
+            fn get_button<'a>(&'a mut self, id: &Self::ButtonId) -> &'a mut dalgi::input::ButtonValue {
                 match *id {
                     $(
                         self::$button_id::$button => &mut self.button.$button ,

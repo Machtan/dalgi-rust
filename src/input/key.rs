@@ -80,4 +80,12 @@ key! {
     key Three   => "3",
     /// The number 4.
     key Four    => "4",
+    /// The letter w.
+    key W => "w",
+    /// The letter a.
+    key A => "a",
+    /// The letter s.
+    key S => "s",
+    /// The letter d.
+    key D => "d",
 }
