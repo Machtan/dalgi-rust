@@ -15,6 +15,10 @@ fn map_keycode(key: Keycode) -> Key {
         Two => Key::Two,
         Three => Key::Three,
         Four => Key::Four,
+        W => Key::W,
+        A => Key::A,
+        S => Key::S,
+        D => Key::D,
         _ => Key::Other(key as i32),
     }
 }
@@ -32,6 +36,10 @@ fn map_scancode(key: Scancode) -> Key {
         Two => Key::Two,
         Three => Key::Three,
         Four => Key::Four,
+        W => Key::W,
+        A => Key::A,
+        S => Key::S,
+        D => Key::D,
         _ => Key::Other(key as i32),
     }
 }
