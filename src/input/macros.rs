@@ -43,7 +43,7 @@ macro_rules! input {
         #[derive(Debug, Clone, PartialEq, Eq, Default)]
         pub struct $signal_type {
             $(
-                $signal : bool ,
+                pub $signal : bool ,
             )*
         }
         
