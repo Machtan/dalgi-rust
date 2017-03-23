@@ -6,16 +6,16 @@
 #[macro_export]
 macro_rules! input {
     (
-        struct $input_type:ident {
+        pub struct $input_type:ident {
             [ button ]
-            struct $button_type:ident < $button_id:ident > {
+            pub struct $button_type:ident < $button_id:ident > {
                 $(
                     $button:ident ,
                 )*
             }
 
             [ signal ]
-            struct $signal_type:ident < $signal_id:ident > {
+            pub struct $signal_type:ident < $signal_id:ident > {
                 $(
                     $signal:ident ,
                 )*
@@ -26,7 +26,7 @@ macro_rules! input {
         #[derive(Debug, Clone, PartialEq, Eq, Default)]
         pub struct $button_type {
             $(
-                $button : dalgi::input::ButtonValue ,
+                pub $button : dalgi::input::ButtonValue ,
             )*
         }
         
@@ -65,7 +65,7 @@ macro_rules! input {
         
         impl $input_type {
             /// Creates a new input state.
-            fn new() -> $input_type {
+            pub fn new() -> $input_type {
                 $input_type::default()
             }
         }

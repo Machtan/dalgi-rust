@@ -3,15 +3,15 @@ extern crate dalgi;
 use dalgi::input::*;
 
 input! {
-    struct Input {
+    pub struct Input {
         [button]
-        struct ButtonState<ButtonId> {
+        pub struct ButtonState<ButtonId> {
             jump,
             shoot,
         }
         
         [signal]
-        struct SignalState<SignalId> {
+        pub struct SignalState<SignalId> {
             quit,
         }
     }

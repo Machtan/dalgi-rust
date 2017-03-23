@@ -12,9 +12,9 @@ use std::time::Duration;
 use std::thread;
 
 input! {
-    struct Input {
+    pub struct Input {
         [button]
-        struct ButtonState<ButtonId> {
+        pub struct ButtonState<ButtonId> {
             jump,
             shoot,
             left,
@@ -22,7 +22,7 @@ input! {
         }
         
         [signal]
-        struct SignalState<SignalId> {
+        pub struct SignalState<SignalId> {
             quit,
         }
     }
